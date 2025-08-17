@@ -1,15 +1,15 @@
-use db::{DataBase, DataBaseRow};
+use db::{DataBase, DataBaseRow, DataBaseTable};
 mod db;
 fn main() {
-    let mut db = DataBase::new(
-        vec![String::from("id"), String::from("name")]
+    let mut db = DataBase::<String>::new();
+
+    db.create_table(
+        String::from("names"),
+        vec![String::from("id"), String::from("name")],
     );
 
-    let db_row = DataBaseRow::new(vec!["2", "hello!"]);
-    db.add_row(db_row);
-
-    let db_row = DataBaseRow::new(vec!["2"]);
-    db.add_row(db_row);
-
-    db.print_table();
+    let table = db.get_table(String::from("names")).unwrap();
+    table.add_row(DataBaseRow::new(vec![String::from("1"), String::from("kalle")]));
+    table.add_row(DataBaseRow::new(vec![String::from("2"), String::from("hanna")]));
+    table.print_table();
 }
