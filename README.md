@@ -1,1 +1,3 @@
-# rust_db\n A basic databse implementation in rust
+# rust_db
+
+A basic databse implementation in rust
