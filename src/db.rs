@@ -1,7 +1,9 @@
 use std::fmt::Display;
+
 pub struct DataBase<T> {
     columns: Vec<String>,
-    rows: Vec<DataBaseRow<T>>
+    rows: Vec<DataBaseRow<T>>,
+    column_count: i32,
 }
 
 pub struct DataBaseRow<T> {
@@ -9,8 +11,13 @@ pub struct DataBaseRow<T> {
 }
 
 impl<T: Display> DataBase<T> {
-    pub fn new(columns: Vec<String>, rows: Vec<DataBaseRow<T>>) -> Self {
-        Self { columns, rows }
+    pub fn new(columns: Vec<String>) -> Self {
+        let column_count = columns.len() as i32;
+        Self {
+            columns,
+            rows: Vec::new(),
+            column_count,
+        }
     }
     fn print_cols(&self) {
         print!("| ");
@@ -19,17 +26,16 @@ impl<T: Display> DataBase<T> {
             index += 1;
             if index != self.columns.len() {
                 print!("{} -- ", el);
-            }
-            else {
+            } else {
                 println!("{} |", el);
             }
         }
     }
 
-    pub fn print_table(&self){
+    pub fn print_table(&self) {
         self.print_cols();
 
-        if self.rows.len() > 1 {
+        if !self.rows.is_empty() {
             for row in self.rows.iter() {
                 print!("| ");
                 for element in row.content.iter() {
@@ -39,10 +45,21 @@ impl<T: Display> DataBase<T> {
             }
         }
     }
-    pub fn add_row(&mut self, row: DataBaseRow<T>) {
+    fn add_row_to_db(&mut self, row: DataBaseRow<T>) -> Result<(), &'static str> {
+        if row.content.len() as i32 != self.column_count {
+            return Err("Row length does not match column count...");
+        }
         self.rows.push(row);
+        Ok(())
+    }
+    pub fn add_row(&mut self, row: DataBaseRow<T>) {
+        match self.add_row_to_db(row) {
+            Ok(()) => println!("Row added!"),
+            Err(e) => println!("Failed to add row, {e}")
+        }
     }
 }
+
 
 impl<T> DataBaseRow<T> {
     pub fn new(content: Vec<T>) -> Self {
