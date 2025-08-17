@@ -1,12 +1,20 @@
+use std::any::{Any, TypeId};
 use std::fmt::Display;
+use std::fmt;
 
 pub struct DataBase<T> {
     tables: Vec<DataBaseTable<T>>,
 }
 
+pub struct DataBaseColumn {
+    name: String,
+    type_id: TypeId,
+    type_name: &'static str,
+}
+
 pub struct DataBaseTable<T> {
     name: String,
-    columns: Vec<String>,
+    columns: Vec<DataBaseColumn>,
     rows: Vec<DataBaseRow<T>>,
     column_count: i32,
 }
@@ -14,12 +22,26 @@ pub struct DataBaseTable<T> {
 pub struct DataBaseRow<T> {
     content: Vec<T>,
 }
+impl std::fmt::Display for DataBaseColumn {
+    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+impl DataBaseColumn {
+    pub fn new<T: 'static + Any + Display>(name: String) -> Self {
+        Self {
+            name,
+            type_id: TypeId::of::<T>(),
+            type_name: std::any::type_name::<T>() 
+        }
+    }
+}
 
 impl<T: Display> DataBase<T> {
     pub fn new() -> Self {
         Self { tables: Vec::new() }
     }
-    pub fn create_table(&mut self, name: String, columns: Vec<String>) {
+    pub fn create_table(&mut self, name: String, columns: Vec<DataBaseColumn>) {
         let db_table = DataBaseTable::new(name, columns);
         self.tables.push(db_table);
     }
@@ -35,7 +57,7 @@ impl<T: Display> DataBase<T> {
 }
 
 impl<T: Display> DataBaseTable<T> {
-    pub fn new(name: String, columns: Vec<String>) -> Self {
+    pub fn new(name: String, columns: Vec<DataBaseColumn>) -> Self {
         let column_count = columns.len() as i32;
         Self {
             name,
