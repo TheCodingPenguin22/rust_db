@@ -1,4 +1,4 @@
-use db::{DataBase, DataBaseColumn, DataBaseRow};
+use db::{DataBase, DataBaseColumn, DataBaseEntry, DataBaseRow, DataType};
 mod db;
 fn main() {
     let mut db = DataBase::<String>::new();
@@ -6,19 +6,18 @@ fn main() {
     db.create_table(
         String::from("names"),
         vec![
-            DataBaseColumn::new::<i32>(String::from("id")),
+            DataBaseColumn::new(String::from("id")),
             DataBaseColumn::new::<String>(String::from("name")),
         ],
     );
 
     let table = db.get_table(String::from("names")).unwrap();
-    table.add_row(DataBaseRow::new(vec![
-        String::from("1"),
-        String::from("kalle"),
-    ]));
-    table.add_row(DataBaseRow::new(vec![
-        String::from("2"),
-        String::from("hanna"),
-    ]));
+    table.add_row(DataBaseRow::new(
+        table,
+        vec![
+            DataBaseEntry::new(1, Data),
+            DataBaseEntry::new(String::from("Kalle"))
+        ],
+    ));
     table.print_table();
 }
