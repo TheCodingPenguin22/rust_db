@@ -1,23 +1,13 @@
-use db::{DataBase, DataBaseColumn, DataBaseEntry, DataBaseRow, DataType};
+use db::{DataBaseEntry, DataType};
+
+use crate::db::DataBaseRow;
 mod db;
 fn main() {
-    let mut db = DataBase::<String>::new();
+    let entries = vec![DataBaseEntry::new(DataType::String(String::from("hello"))), 
+                        DataBaseEntry::new(DataType::Integer(22))];
 
-    db.create_table(
-        String::from("names"),
-        vec![
-            DataBaseColumn::new(String::from("id")),
-            DataBaseColumn::new::<String>(String::from("name")),
-        ],
-    );
+    let db_row = DataBaseRow::new(entries);
 
-    let table = db.get_table(String::from("names")).unwrap();
-    table.add_row(DataBaseRow::new(
-        table,
-        vec![
-            DataBaseEntry::new(1, Data),
-            DataBaseEntry::new(String::from("Kalle"))
-        ],
-    ));
-    table.print_table();
+    db_row.print();
+    
 }

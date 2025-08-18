@@ -1,0 +1,57 @@
+#[derive(PartialEq, Eq)]
+pub enum DataType {
+    String(String),
+    Integer(i32),
+}
+
+pub trait FromDataType<T> {
+    fn from_data_type(&self) -> Option<T>;
+}
+
+impl FromDataType<String> for DataType {
+    fn from_data_type(&self) -> Option<String> {
+        if let DataType::String(s) = self {
+            Some(s.clone())
+        } else {
+            None
+        }
+    }
+}
+
+impl FromDataType<i32> for DataType {
+    fn from_data_type(&self) -> Option<i32> {
+        if let DataType::Integer(i) = self {
+            Some(*i)
+        } else {
+            None
+        }
+    }
+}
+
+impl DataType {
+    pub fn print(&self) {
+        match self {
+            DataType::String(_) => self.print_string(),
+            DataType::Integer(_) => self.print_i32(),
+        }
+    }
+    fn print_string(&self)
+    where
+        Self: FromDataType<String>,
+    {
+        let result: Option<String> = self.from_data_type();
+        if let Some(s) = result {
+            println!("{s}");
+        }
+    }
+
+    fn print_i32(&self)
+    where
+        Self: FromDataType<i32>,
+    {
+        let result: Option<i32> = self.from_data_type();
+        if let Some(s) = result {
+            println!("{s}");
+        }
+    }
+}
