@@ -22,14 +22,15 @@ impl DataBaseTable {
 
     pub fn add_row(&mut self, row: DataBaseRow) -> Result<(), &'static str> {
         if self.column_types.len() != row.entries.len() {
-            return Err("Column missmatch")
+            return Err("Column missmatch");
         }
 
         for i in 0..row.entries.iter().len() {
             match (&row.entries[i].data, &self.column_types[i]) {
                 (DataType::String(_), DataType::String(_)) => (),
                 (DataType::Integer(_), DataType::Integer(_)) => (),
-                _ => return Err("Type missmatch")
+                (DataType::Bool(_), DataType::Bool(_)) => (),
+                _ => return Err("Type missmatch"),
             }
         }
         self.rows.push(row);

@@ -5,6 +5,7 @@ Created 17/08/2025 by Fredrik Adolfsson
 pub enum DataType {
     String(String),
     Integer(i32),
+    Bool(bool)
 }
 
 pub trait FromDataType<T> {
@@ -31,11 +32,23 @@ impl FromDataType<i32> for DataType {
     }
 }
 
+impl FromDataType<bool> for DataType {
+    fn from_data_type(&self) -> Option<bool> {
+        if let DataType::Bool(b) = self {
+            Some(*b)
+        }
+        else {
+            None
+        }
+    }
+}
+
 impl DataType {
     pub fn print(&self) {
         match self {
             DataType::String(_) => self.print_string(),
             DataType::Integer(_) => self.print_i32(),
+            DataType::Bool(_) => self.print_bool(),
         }
     }
     fn print_string(&self)
@@ -57,4 +70,14 @@ impl DataType {
             println!("{s}");
         }
     }
+    fn print_bool(&self)
+        where 
+        Self: FromDataType<bool>
+    {
+        let result: Option<bool> = self.from_data_type();
+        if let Some(b) = result {
+            println!("{b}");
+        }
+    }
+            
 }

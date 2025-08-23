@@ -1,33 +1,19 @@
-use db::{DataBaseEntry, DataBaseTable, DataType};
+use std::io;
+//use db::{DataBaseEntry, DataBaseTable, DataType, DataBaseRow};
+use sql::handle_sql;
 
-use crate::db::DataBaseRow;
+
+mod sql;
 mod db;
 fn main() {
-    let mut table = DataBaseTable::new(
-        "test".to_string(),
-        vec![DataType::String("".to_string()), DataType::Integer(0)],
-    );
-    let entries = vec![
-        DataBaseEntry::new(DataType::String("hello".to_string())),
-        DataBaseEntry::new(DataType::Integer(22)),
-    ];
+    println!("Welcome to a demo of rust_db!");
+    println!("Please enter the command you want to execute:");
+    let mut input = String::new();
 
-    let db_row = DataBaseRow::new(entries);
-    match table.add_row(db_row) {
-        Ok(()) => println!("ok!"),
-        Err(s) => println!("{s}"),
-    }
+    io::stdin().read_line(&mut input).expect("unbable to read input");
+    let input = input.trim().split(" ");
+    let input = input.collect::<Vec<&str>>();
 
-    let db_row = DataBaseRow::new(vec![
-        DataBaseEntry::new(DataType::String("kalle".to_string())),
-        DataBaseEntry::new(DataType::Integer(27)),
-    ]);
-    match table.add_row(db_row) {
-        Ok(()) => println!("ok!"),
-        Err(s) => println!("{s}"),
-    }
+    handle_sql(input);
 
-    for i in 1..=2 {
-        table.get_row(i).print();
-    }
 }
