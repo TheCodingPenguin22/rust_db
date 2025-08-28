@@ -4,7 +4,34 @@ Created 17/08/2025 by Fredrik Adolfsson
 
 pub use datatype::DataType;
 pub mod datatype;
+#[derive(Debug)]
+pub struct DataBase {
+    name: String,
+    tables: Vec<DataBaseTable>,
+    initialized: bool
+}
 
+impl DataBase {
+    pub fn new(name: String) -> Self {
+        Self {
+            name,
+            tables: Vec::new(),
+            initialized: false
+        }
+    }
+    pub fn init(&mut self, name: String) {
+        self.name = name;
+        self.initialized = true;
+    }
+    pub fn is_init(&self) -> bool {
+        self.initialized
+    }
+    pub fn add_table(&mut self, db_table: DataBaseTable) {
+        self.tables.push(db_table);
+    }
+}
+
+#[derive(Debug)]
 pub struct DataBaseTable {
     name: String,
     column_types: Vec<DataType>,
@@ -39,6 +66,9 @@ impl DataBaseTable {
     pub fn get_row(&self, row_num: i32) -> &DataBaseRow {
         &self.rows[(row_num - 1) as usize]
     }
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
 }
 
 #[derive(Debug)]
@@ -52,6 +82,7 @@ impl DataBaseEntry {
     }
 }
 
+#[derive(Debug)]
 pub struct DataBaseRow {
     entries: Vec<DataBaseEntry>,
 }

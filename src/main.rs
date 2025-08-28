@@ -1,19 +1,29 @@
 use std::io;
-//use db::{DataBaseEntry, DataBaseTable, DataType, DataBaseRow};
+/*
+use db::{DataBaseEntry, DataBaseTable, DataType, DataBaseRow};
+*/
 use sql::handle_sql;
 
+use crate::db::DataBase;
 
-mod sql;
 mod db;
+mod sql;
 fn main() {
     println!("Welcome to a demo of rust_db!");
-    println!("Please enter the command you want to execute:");
-    let mut input = String::new();
+    let mut db = DataBase::new("UNINITIALIZED".to_string());
+    loop {
+        println!("Please enter the command you want to execute:");
+        let mut input = String::new();
 
-    io::stdin().read_line(&mut input).expect("unbable to read input");
-    let input = input.trim().split(" ");
-    let input = input.collect::<Vec<&str>>();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("unbable to read input");
 
-    handle_sql(input);
+        if input.trim() == "EXIT" {
+            println!("Thanks for using rust_db!");
+            break;
+        }
 
+        handle_sql(input.to_string(), &mut db);
+    }
 }

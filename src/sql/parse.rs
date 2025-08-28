@@ -4,6 +4,7 @@ pub enum Keywords {
     SELECT,
     FROM,
     TABLE,
+    DATABASE,
     VARIABLE(String)
 }
 
@@ -15,6 +16,7 @@ pub fn parse_sql(command: Vec<&str>) -> Vec<Keywords> {
             "SELECT" => keywords.push(Keywords::SELECT),
             "FROM" => keywords.push(Keywords::FROM),
             "TABLE" => keywords.push(Keywords::TABLE),
+            "DATABASE" => keywords.push(Keywords::DATABASE),
             _ => keywords.push(Keywords::VARIABLE(c.to_string()))
         }
     }
