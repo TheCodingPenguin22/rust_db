@@ -8,7 +8,7 @@ pub mod datatype;
 pub struct DataBase {
     name: String,
     tables: Vec<DataBaseTable>,
-    initialized: bool
+    initialized: bool,
 }
 
 impl DataBase {
@@ -16,7 +16,7 @@ impl DataBase {
         Self {
             name,
             tables: Vec::new(),
-            initialized: false
+            initialized: false,
         }
     }
     pub fn init(&mut self, name: String) {
@@ -32,28 +32,39 @@ impl DataBase {
 }
 
 #[derive(Debug)]
+pub struct DataBaseColumn {
+    name: String,
+    column_type: DataType,
+}
+impl DataBaseColumn {
+    pub fn new(name: String, column_type: DataType) -> Self {
+        Self { name, column_type }
+    }
+}
+
+#[derive(Debug)]
 pub struct DataBaseTable {
     name: String,
-    column_types: Vec<DataType>,
+    columns: Vec<DataBaseColumn>,
     rows: Vec<DataBaseRow>,
 }
 
 impl DataBaseTable {
-    pub fn new(name: String, column_types: Vec<DataType>) -> Self {
+    pub fn new(name: String, columns: Vec<DataBaseColumn>) -> Self {
         Self {
             name,
-            column_types,
+            columns,
             rows: Vec::new(),
         }
     }
 
     pub fn add_row(&mut self, row: DataBaseRow) -> Result<(), &'static str> {
-        if self.column_types.len() != row.entries.len() {
+        if self.columns.len() != row.entries.len() {
             return Err("Column missmatch");
         }
 
         for i in 0..row.entries.iter().len() {
-            match (&row.entries[i].data, &self.column_types[i]) {
+            match (&row.entries[i].data, &self.columns[i].column_type) {
                 (DataType::String(_), DataType::String(_)) => (),
                 (DataType::Integer(_), DataType::Integer(_)) => (),
                 (DataType::Bool(_), DataType::Bool(_)) => (),
