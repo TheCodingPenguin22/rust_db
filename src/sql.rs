@@ -1,8 +1,9 @@
 use crate::{
     db::{DataBase, DataBaseColumn, DataBaseEntry, DataBaseRow, DataBaseTable, DataType},
-    sql::parse::{parse_sql, tokenize_command, Keywords},
+    sql::{parse::{parse_sql, tokenize_command, Keywords}, pretty_print::print_tables},
 };
 
+mod pretty_print;
 mod parse;
 
 pub fn handle_sql(command: String, db: &mut DataBase) {
@@ -19,6 +20,8 @@ pub fn handle_sql(command: String, db: &mut DataBase) {
         }
     } else if cmd_tokenized[0] == Keywords::INSERT && cmd_tokenized[1] == Keywords::INTO {
         insert_into_table(db, &cmd_tokenized);
+    } else if cmd_tokenized[0] == Keywords::SHOW && cmd_tokenized[1] == Keywords::TABLES {
+        print_tables(&*db);
     }
 }
 
@@ -47,7 +50,7 @@ fn insert_into_table(db: &mut DataBase, cmd_tokenized: &[Keywords]) {
 fn create_table_entires(cmd_tokenized: &[Keywords]) -> Vec<DataBaseEntry> {
     let mut entries: Vec<DataBaseEntry> = Vec::new();
     let mut i = 0;
-    while i < cmd_tokenized.len(){
+    while i < cmd_tokenized.len() {
         dbg!(&cmd_tokenized[i]);
         match &cmd_tokenized[i] {
             Keywords::LPAREN => (),

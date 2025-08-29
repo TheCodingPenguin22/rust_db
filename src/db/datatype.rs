@@ -1,6 +1,8 @@
 /*
 Created 17/08/2025 by Fredrik Adolfsson
 */
+use std::fmt::Display;
+use std::fmt;
 #[derive(PartialEq, Eq, Debug)]
 pub enum DataType {
     String(String),
@@ -43,7 +45,32 @@ impl FromDataType<bool> for DataType {
     }
 }
 
+
+impl Display for DataType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            DataType::String(s) => write!(f, "{}", s),
+            DataType::Bool(b) => {
+                let b = b.to_string();
+                write!(f, "{}", b)
+            },
+            DataType::Integer(i) => {
+                let i = i.to_string();
+                write!(f, "{}", i)
+            }
+        }
+    }
+    
+}
+
 impl DataType {
+    pub fn get_type_as_string(&self) -> String {
+        match self {
+            DataType::String(_) => "String".to_string(),
+            DataType::Integer(_) => "Integer".to_string(),
+            DataType::Bool(_) => "Bool".to_string(),
+        }
+    }
     pub fn print(&self) {
         match self {
             DataType::String(_) => self.print_string(),
@@ -57,7 +84,7 @@ impl DataType {
     {
         let result: Option<String> = self.from_data_type();
         if let Some(s) = result {
-            println!("{s}");
+            print!("{s}");
         }
     }
 
@@ -67,7 +94,7 @@ impl DataType {
     {
         let result: Option<i32> = self.from_data_type();
         if let Some(s) = result {
-            println!("{s}");
+            print!("{s}");
         }
     }
     fn print_bool(&self)
@@ -76,7 +103,7 @@ impl DataType {
     {
         let result: Option<bool> = self.from_data_type();
         if let Some(b) = result {
-            println!("{b}");
+            print!("{b}");
         }
     }
             

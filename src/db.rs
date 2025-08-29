@@ -19,6 +19,9 @@ impl DataBase {
             initialized: false,
         }
     }
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
     pub fn init(&mut self, name: String) {
         self.name = name;
         self.initialized = true;
@@ -32,10 +35,13 @@ impl DataBase {
     pub fn get_table(&mut self, table_name: String) -> Result<&mut DataBaseTable, &'static str> {
         for table in self.tables.iter_mut() {
             if *table.get_name() == table_name {
-                return Ok(table)
+                return Ok(table);
             }
         }
         Err("Could not find database talbe...")
+    }
+    pub fn get_tables(&self) -> &Vec<DataBaseTable> {
+        &self.tables
     }
 }
 
@@ -47,6 +53,12 @@ pub struct DataBaseColumn {
 impl DataBaseColumn {
     pub fn new(name: String, column_type: DataType) -> Self {
         Self { name, column_type }
+    }
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+    pub fn get_type(&self) -> &DataType {
+        &self.column_type
     }
 }
 
@@ -85,6 +97,12 @@ impl DataBaseTable {
     pub fn get_row(&self, row_num: i32) -> &DataBaseRow {
         &self.rows[(row_num - 1) as usize]
     }
+    pub fn get_rows(&self) -> &Vec<DataBaseRow> {
+       &self.rows
+    }
+    pub fn get_columns(&self) -> &Vec<DataBaseColumn> {
+        &self.columns
+    }
     pub fn get_name(&self) -> &String {
         &self.name
     }
@@ -98,6 +116,9 @@ pub struct DataBaseEntry {
 impl DataBaseEntry {
     pub fn new(data: DataType) -> Self {
         Self { data }
+    }
+    pub fn get_data(&self) -> &DataType {
+        &self.data
     }
 }
 
@@ -114,5 +135,8 @@ impl DataBaseRow {
         for entry in self.entries.iter() {
             entry.data.print();
         }
+    }
+    pub fn get_entries(&self) -> &Vec<DataBaseEntry> {
+        &self.entries
     }
 }
