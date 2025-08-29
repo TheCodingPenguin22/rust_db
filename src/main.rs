@@ -1,10 +1,7 @@
-use std::io;
-/*
-use db::{DataBaseEntry, DataBaseTable, DataType, DataBaseRow};
-*/
 use sql::handle_sql;
+use std::io;
 
-use crate::db::DataBase;
+use crate::db::{DataBase, DataBaseColumn, DataBaseTable, DataType};
 
 mod db;
 mod sql;

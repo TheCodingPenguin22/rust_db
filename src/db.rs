@@ -29,6 +29,14 @@ impl DataBase {
     pub fn add_table(&mut self, db_table: DataBaseTable) {
         self.tables.push(db_table);
     }
+    pub fn get_table(&mut self, table_name: String) -> Result<&mut DataBaseTable, &'static str> {
+        for table in self.tables.iter_mut() {
+            if *table.get_name() == table_name {
+                return Ok(table)
+            }
+        }
+        Err("Could not find database talbe...")
+    }
 }
 
 #[derive(Debug)]

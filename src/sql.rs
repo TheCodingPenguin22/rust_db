@@ -1,5 +1,5 @@
 use crate::{
-    db::{DataBase, DataBaseColumn, DataBaseTable, DataType},
+    db::{DataBase, DataBaseColumn, DataBaseEntry, DataBaseRow, DataBaseTable, DataType},
     sql::parse::{parse_sql, tokenize_command, Keywords},
 };
 
@@ -17,10 +17,89 @@ pub fn handle_sql(command: String, db: &mut DataBase) {
         if cmd_tokenized[1] == Keywords::TABLE {
             create_table(db, &cmd_tokenized);
         }
+    } else if cmd_tokenized[0] == Keywords::INSERT && cmd_tokenized[1] == Keywords::INTO {
+        insert_into_table(db, &cmd_tokenized);
     }
 }
 
-fn create_database(db: &mut DataBase, cmd_tokenized: &Vec<Keywords>) {
+fn insert_into_table(db: &mut DataBase, cmd_tokenized: &[Keywords]) {
+    let table_name: String = match &cmd_tokenized[2] {
+        Keywords::VARIABLE(s) => s.to_string(),
+        _ => panic!("No table name found"),
+    };
+    let table = db.get_table(table_name);
+
+    let table = match table {
+        Ok(t) => t,
+        Err(_) => panic!("whoopps"),
+    };
+
+    let entries = create_table_entires(&cmd_tokenized[3..]);
+    dbg!(&entries);
+
+    match table.add_row(DataBaseRow::new(entries)) {
+        Ok(_) => println!("Row added"),
+        Err(e) => println!("{e}"),
+    };
+    dbg!(db);
+}
+
+fn create_table_entires(cmd_tokenized: &[Keywords]) -> Vec<DataBaseEntry> {
+    let mut entries: Vec<DataBaseEntry> = Vec::new();
+    let mut i = 0;
+    while i < cmd_tokenized.len(){
+        dbg!(&cmd_tokenized[i]);
+        match &cmd_tokenized[i] {
+            Keywords::LPAREN => (),
+            Keywords::RQUOTE => (),
+            Keywords::COMMA => (),
+            Keywords::RPAREN => break,
+            Keywords::LQUOTE => {
+                let string = parse_string(&cmd_tokenized[i..i + 2]);
+                let entry = DataBaseEntry::new(DataType::String(string));
+                entries.push(entry);
+                i += 2;
+            }
+            Keywords::VARIABLE(_) => {
+                let datatype = parse_variable(&cmd_tokenized[i]);
+                let entry = DataBaseEntry::new(datatype);
+                entries.push(entry);
+            }
+            _ => panic!("AHAAHAHA"),
+        };
+        i += 1;
+    }
+
+    entries
+}
+
+fn parse_variable(cmd_tokenized: &Keywords) -> DataType {
+    match &cmd_tokenized {
+        Keywords::VARIABLE(v) => {
+            println!("{v}");
+            if v == "true" {
+                DataType::Bool(true)
+            } else if v == "false" {
+                DataType::Bool(false)
+            } else if v.trim().parse::<i32>().is_ok() {
+                let number = v.trim().parse::<i32>().unwrap();
+                DataType::Integer(number)
+            } else {
+                DataType::String(v.to_string())
+            }
+        }
+        _ => panic!("HELP!!!"),
+    }
+}
+fn parse_string(cmd_tokenized: &[Keywords]) -> String {
+    dbg!(cmd_tokenized);
+    match &cmd_tokenized[1] {
+        Keywords::VARIABLE(s) => s.to_string(),
+        _ => panic!("String not found"),
+    }
+}
+
+fn create_database(db: &mut DataBase, cmd_tokenized: &[Keywords]) {
     match &cmd_tokenized[2] {
         Keywords::VARIABLE(v) => {
             db.init(v.to_string());
@@ -28,7 +107,7 @@ fn create_database(db: &mut DataBase, cmd_tokenized: &Vec<Keywords>) {
         _ => panic!("ERROR"),
     }
 }
-fn create_table(db: &mut DataBase, cmd_tokenized: &Vec<Keywords>) {
+fn create_table(db: &mut DataBase, cmd_tokenized: &[Keywords]) {
     if !db.is_init() {
         println!(
             "Database is not initialized. Please initialized a database before adding a table."
@@ -45,34 +124,35 @@ fn create_table(db: &mut DataBase, cmd_tokenized: &Vec<Keywords>) {
     dbg!(db);
 }
 
-fn create_columns(cmd_tokenized: &Vec<Keywords>) -> Vec<DataBaseColumn> {
+fn create_columns(cmd_tokenized: &[Keywords]) -> Vec<DataBaseColumn> {
     let mut columns: Vec<DataBaseColumn> = Vec::new();
     for i in 3..cmd_tokenized.len() {
         match &cmd_tokenized[i] {
             Keywords::LPAREN => continue,
+            Keywords::COMMA => continue,
             Keywords::RPAREN => break,
-            Keywords::VARIABLE(v) => continue,
+            Keywords::VARIABLE(_) => continue,
             Keywords::INTEGER => {
-                let name = match &cmd_tokenized[i-1] {
+                let name = match &cmd_tokenized[i - 1] {
                     Keywords::VARIABLE(v) => v.to_string(),
                     _ => panic!("ERROR"),
                 };
                 columns.push(DataBaseColumn::new(name, DataType::Integer(0)));
-            },
+            }
             Keywords::STRING => {
-                let name = match &cmd_tokenized[i-1] {
+                let name = match &cmd_tokenized[i - 1] {
                     Keywords::VARIABLE(v) => v.to_string(),
                     _ => panic!("ERROR"),
                 };
                 columns.push(DataBaseColumn::new(name, DataType::String("".to_string())));
-            },
+            }
             Keywords::BOOL => {
-                let name = match &cmd_tokenized[i-1] {
+                let name = match &cmd_tokenized[i - 1] {
                     Keywords::VARIABLE(v) => v.to_string(),
                     _ => panic!("ERROR"),
                 };
                 columns.push(DataBaseColumn::new(name, DataType::Bool(true)));
-            },
+            }
             _ => panic!("ERROR!"),
         }
     }
