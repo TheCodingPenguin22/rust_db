@@ -3,7 +3,7 @@ Created 17/08/2025 by Fredrik Adolfsson
 */
 use std::fmt::Display;
 use std::fmt;
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub enum DataType {
     String(String),
     Integer(i32),

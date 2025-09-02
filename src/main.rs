@@ -1,7 +1,7 @@
 use sql::handle_sql;
 use std::io;
 
-use crate::db::{DataBase, DataBaseColumn, DataBaseTable, DataType};
+use crate::db::{DataBase, DataBaseColumn, DataBaseRow, DataBaseTable, DataType, DataBaseEntry};
 
 mod db;
 mod sql;
@@ -11,10 +11,19 @@ fn main() {
     let mut db = DataBase::new("a".to_string());
     db.init("a".to_string());
     let columns = vec![
-        DataBaseColumn::new("ID".to_string(), DataType::Integer(0)),
-        DataBaseColumn::new("name".to_string(), DataType::String("".to_string())),
+        DataBaseColumn::new(0, "ID".to_string(), DataType::Integer(0)),
+        DataBaseColumn::new(1, "name".to_string(), DataType::String("".to_string())),
     ];
-    let db_table = DataBaseTable::new("test".to_string(), columns);
+    let mut db_table = DataBaseTable::new("test".to_string(), columns);
+
+    db_table.add_row(DataBaseRow::new(vec![
+        DataBaseEntry::new(DataType::Integer(1)),
+        DataBaseEntry::new(DataType::String("Kalle".to_string())),
+    ])).unwrap();
+    db_table.add_row(DataBaseRow::new(vec![
+        DataBaseEntry::new(DataType::Integer(2)),
+        DataBaseEntry::new(DataType::String("Lisa".to_string())),
+    ])).unwrap();
     db.add_table(db_table);
     loop {
         println!("Please enter the command you want to execute:");

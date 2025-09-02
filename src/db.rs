@@ -45,20 +45,24 @@ impl DataBase {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DataBaseColumn {
+    id: i32,
     name: String,
     column_type: DataType,
 }
 impl DataBaseColumn {
-    pub fn new(name: String, column_type: DataType) -> Self {
-        Self { name, column_type }
+    pub fn new(id: i32, name: String, column_type: DataType) -> Self {
+        Self { id, name, column_type }
     }
     pub fn get_name(&self) -> &String {
         &self.name
     }
     pub fn get_type(&self) -> &DataType {
         &self.column_type
+    }
+    pub fn get_id(&self) -> i32 {
+        self.id
     }
 }
 
@@ -93,9 +97,6 @@ impl DataBaseTable {
         }
         self.rows.push(row);
         Ok(())
-    }
-    pub fn get_row(&self, row_num: i32) -> &DataBaseRow {
-        &self.rows[(row_num - 1) as usize]
     }
     pub fn get_rows(&self) -> &Vec<DataBaseRow> {
        &self.rows

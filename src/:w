@@ -1,19 +1,16 @@
-use crate::db::{DataBase, DataBaseColumn, DataBaseRow, DataBaseTable};
+use crate::db::{DataBase, DataBaseTable};
 pub fn print_tables(db: &DataBase) {
     println!("Database name: {}", db.get_name());
     let tables = db.get_tables();
-    println!("{} has {} table(s).", db.get_name(), tables.len());
+    println!("{} has {} tables.", db.get_name(), tables.len());
     if tables.is_empty() {
         println!("This Database does not contain any tables...\n\n");
     } else {
-        for i in 0..tables.len() {
-            println!("{}: {}", i + 1, tables[i].get_name());
-            print_table(&tables[i]);
-        }
+        for i in 0..tables.len() {}
     }
 }
 
-pub fn print_table(table: &DataBaseTable) {
+pub fn print_table(table: DataBaseTable) {
     let col_width = 14;
     let columns = table.get_columns();
     let total_width = ((col_width + 2) * columns.len()) as i32;
@@ -22,7 +19,6 @@ pub fn print_table(table: &DataBaseTable) {
     print!("    | ");
     for col in columns {
         let mut col_name = col.get_name().clone();
-
         col_name.push_str(": ");
         col_name.push_str(col.get_type().get_type_as_string().as_str());
         for i in col_name.len()..=col_width {
@@ -72,49 +68,4 @@ fn print_ln(total_width: i32, char: String) {
             println!("{}", char);
         }
     }
-}
-
-pub fn print_cols(table: &mut DataBaseTable, cols: Vec<DataBaseColumn>) {
-    let col_width = 14;
-    let total_width = ((col_width + 2) * cols.len()) as i32;
-
-    let rows = table.get_rows();
-
-    let mut index = 1;
-
-    print_ln(total_width, "_".to_string());
-    print!("    | ");
-    for col in &cols {
-        let mut col_name = col.get_name().clone();
-
-        col_name.push_str(": ");
-        col_name.push_str(col.get_type().get_type_as_string().as_str());
-        for i in col_name.len()..=col_width {
-            col_name.push_str(" ");
-        }
-        if index == cols.len() {
-            println!("{}|", col_name);
-        } else {
-            print!("{}| ", col_name);
-        }
-        index += 1;
-    }
-    let col_ids: Vec<i32> = cols.iter().map(|x| x.get_id()).collect();
-    for row in rows {
-        print!("    | ");
-        let entries = row.get_entries();
-        for i in 0..entries.len() {
-            if !col_ids.contains(&(i as i32)) {
-                continue;
-            };
-            let entry = &entries[i];
-            let mut entry_name = entry.get_data().to_string();
-            for i in entry_name.len()..=col_width {
-                entry_name.push_str(" ");
-            }
-                print!("{}| ", entry_name);
-        }
-        println!();
-    }
-    print_ln(total_width, " ̄".to_string());
 }

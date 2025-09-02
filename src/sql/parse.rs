@@ -12,6 +12,7 @@ pub enum Keywords {
     LPAREN,
     RPAREN,
     COMMA,
+    WILDCARD,
     RQUOTE,
     LQUOTE,
     STRING,
@@ -19,6 +20,31 @@ pub enum Keywords {
     BOOL,
     VARIABLE(String),
 }
+ impl std::fmt::Display for Keywords{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            Keywords::CREATE => write!(f, "CREATE" ),
+            Keywords::INSERT => write!(f, "INSERT" ),
+            Keywords::INTO => write!(f, "INTO" ),
+            Keywords::SELECT => write!(f, "SELECT" ),
+            Keywords::FROM => write!(f, "FROM" ),
+            Keywords::SHOW => write!(f, "SHOW" ),
+            Keywords::TABLES => write!(f, "TABLES" ),
+            Keywords::TABLE => write!(f, "TABLE" ),
+            Keywords::DATABASE => write!(f, "DATABASE" ),
+            Keywords::LPAREN => write!(f, "LPAREN" ),
+            Keywords::RPAREN => write!(f, "RPAREN" ),
+            Keywords::COMMA => write!(f, "COMMA" ),
+            Keywords::WILDCARD => write!(f, "WILDCARD" ),
+            Keywords::RQUOTE => write!(f, "RQUOTE" ),
+            Keywords::LQUOTE => write!(f, "LQUOTE" ),
+            Keywords::STRING => write!(f, "STRING" ),
+            Keywords::INTEGER => write!(f, "INTEGER" ),
+            Keywords::BOOL => write!(f, "BOOL" ),
+            Keywords::VARIABLE(_) => write!(f, "VARIABLE"),
+        }
+    }
+ }
 
 pub fn parse_sql(command: Vec<String>) -> Vec<Keywords> {
     let mut keywords: Vec<Keywords> = Vec::new();
@@ -34,6 +60,7 @@ pub fn parse_sql(command: Vec<String>) -> Vec<Keywords> {
             "DATABASE" => keywords.push(Keywords::DATABASE),
             "INSERT" => keywords.push(Keywords::INSERT),
             "INTO" => keywords.push(Keywords::INTO),
+            "*" => keywords.push(Keywords::WILDCARD),
             "(" => keywords.push(Keywords::LPAREN),
             ")" => keywords.push(Keywords::RPAREN),
             "\"" => {
@@ -88,6 +115,5 @@ pub fn tokenize_command(command: String) -> Vec<String> {
         tokenized_command.push(word.trim().to_string());
     }
 
-    dbg!(&tokenized_command);
     tokenized_command
 }
