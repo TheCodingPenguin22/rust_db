@@ -14,7 +14,7 @@ pub fn print_tables(db: &DataBase) {
 }
 
 pub fn print_table(table: &DataBaseTable) {
-    let col_width = 14;
+    let col_width = 18;
     let columns = table.get_columns();
     let total_width = ((col_width + 2) * columns.len()) as i32;
     print_ln(total_width, "_".to_string());
@@ -75,7 +75,7 @@ fn print_ln(total_width: i32, char: String) {
 }
 
 pub fn print_cols(table: &mut DataBaseTable, cols: Vec<DataBaseColumn>) {
-    let col_width = 14;
+    let col_width = 18;
     let total_width = ((col_width + 2) * cols.len()) as i32;
 
     let rows = table.get_rows();

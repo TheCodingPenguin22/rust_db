@@ -50,6 +50,7 @@ pub fn parse_sql(command: Vec<String>) -> Vec<Keywords> {
     let mut keywords: Vec<Keywords> = Vec::new();
     for i in 0..command.len() {
         let c = &command[i];
+        // TO-DO: Fix string with spaces.
         match c.trim() {
             "CREATE" => keywords.push(Keywords::CREATE),
             "SELECT" => keywords.push(Keywords::SELECT),
