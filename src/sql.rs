@@ -17,9 +17,10 @@ pub fn handle_sql(command: String, db: &mut DataBase) {
     if cmd_tokenized[0] == Keywords::CREATE {
         if cmd_tokenized[1] == Keywords::DATABASE {
             create_database(db, &cmd_tokenized);
-        }
-        if cmd_tokenized[1] == Keywords::TABLE {
+        } else if cmd_tokenized[1] == Keywords::TABLE {
             create_table(db, &cmd_tokenized);
+        } else {
+            println!("Error. Wrong keyword at position 2. Expected DATABASE or TABLE.");
         }
     } else if cmd_tokenized[0] == Keywords::INSERT && cmd_tokenized[1] == Keywords::INTO {
         insert_into_table(db, &cmd_tokenized);
@@ -29,11 +30,14 @@ pub fn handle_sql(command: String, db: &mut DataBase) {
         if cmd_tokenized[1] == Keywords::WILDCARD && cmd_tokenized[2] == Keywords::FROM {
             let table = match &cmd_tokenized[3] {
                 Keywords::VARIABLE(v) => db.get_table(v.to_string()),
-                _ => Err("Wrong keyword"),
+                _ => {
+                    println!("Wrong keyword");
+                    return;
+                }
             };
             match table {
                 Ok(t) => print_table(t),
-                Err(e) => println!("Table not found. Error: {e}"),
+                Err(e) => println!("Error: {e}"),
             };
         } else {
             match cmd_tokenized[1] {
@@ -43,20 +47,36 @@ pub fn handle_sql(command: String, db: &mut DataBase) {
                         Ok(c) => c,
                         Err(_) => panic!("ASKJLASKHJ"),
                     };
+
+                    let table_name;
                     let table = match &cmd_tokenized[cmd_tokenized.len() - 1] {
-                        Keywords::VARIABLE(v) => db.get_table(v.to_string()),
-                        _ => panic!("JKJHBASD"),
+                        Keywords::VARIABLE(v) => {
+                            table_name = v.to_string();
+                            db.get_table(v.to_string())
+                        }
+                        _ => {
+                            println!(
+                                "Error. Wrong keyword at position 1. {} is not a valid table name.",
+                                cmd_tokenized[cmd_tokenized.len() - 1]
+                            );
+                            return;
+                        }
                     };
 
                     let table = match table {
                         Ok(t) => t,
-                        Err(_) => panic!("askdjh"),
+                        Err(_) => {
+                            println!("Error. No table with name {}", table_name);
+                            return;
+                        }
                     };
                     print_cols(table, cols);
                 }
                 _ => println!("Wrong command. Cannot find variable {}.", cmd_tokenized[1]),
             };
         }
+    } else {
+        println!("Error. Wrong keyword at position 1.");
     }
 }
 
@@ -100,13 +120,23 @@ fn select_columns(
 fn insert_into_table(db: &mut DataBase, cmd_tokenized: &[Keywords]) {
     let table_result = match &cmd_tokenized[2] {
         Keywords::VARIABLE(s) => db.get_table(s.to_string()),
-        _ => Err("No table name found"),
+        _ => {
+            println!("Error at position 3. {} is not a valid string.", cmd_tokenized[2]);
+            return;
+        }
     };
     let table;
     match table_result {
         Ok(t) => {
             table = t;
             let entries = create_table_entires(&cmd_tokenized[3..]);
+            let entries = match entries {
+                Ok(e) => e,
+                Err(e) => {
+                    println!("{}", e);
+                    return;
+                }
+            };
 
             match table.add_row(DataBaseRow::new(entries)) {
                 Ok(_) => println!("Row added"),
@@ -119,7 +149,7 @@ fn insert_into_table(db: &mut DataBase, cmd_tokenized: &[Keywords]) {
     };
 }
 
-fn create_table_entires(cmd_tokenized: &[Keywords]) -> Vec<DataBaseEntry> {
+fn create_table_entires(cmd_tokenized: &[Keywords]) -> Result<Vec<DataBaseEntry>, String> {
     let mut entries: Vec<DataBaseEntry> = Vec::new();
     let mut i = 0;
     while i < cmd_tokenized.len() {
@@ -129,7 +159,7 @@ fn create_table_entires(cmd_tokenized: &[Keywords]) -> Vec<DataBaseEntry> {
             Keywords::COMMA => (),
             Keywords::RPAREN => break,
             Keywords::LQUOTE => {
-                let string = parse_string(&cmd_tokenized[i..i + 2]);
+                let string = parse_string(&cmd_tokenized[i..i + 2])?;
                 let entry = DataBaseEntry::new(DataType::String(string));
                 entries.push(entry);
                 i += 2;
@@ -144,7 +174,7 @@ fn create_table_entires(cmd_tokenized: &[Keywords]) -> Vec<DataBaseEntry> {
         i += 1;
     }
 
-    entries
+    Ok(entries)
 }
 
 fn parse_variable(cmd_tokenized: &Keywords) -> DataType {
@@ -165,10 +195,13 @@ fn parse_variable(cmd_tokenized: &Keywords) -> DataType {
         _ => panic!("HELP!!!"),
     }
 }
-fn parse_string(cmd_tokenized: &[Keywords]) -> String {
+fn parse_string(cmd_tokenized: &[Keywords]) -> Result<String, String> {
     match &cmd_tokenized[1] {
-        Keywords::VARIABLE(s) => s.to_string(),
-        _ => panic!("String not found"),
+        Keywords::VARIABLE(s) => Ok(s.to_string()),
+        _ => Err(format!(
+            "Error parsing string. Wrong keyword at position {}. {} is not a valid string.",
+            2, cmd_tokenized[1]
+        )),
     }
 }
 
@@ -178,9 +211,8 @@ fn create_database(db: &mut DataBase, cmd_tokenized: &[Keywords]) {
             db.init(v.to_string());
         }
         _ => println!(
-            "Error creating database. Found {}, expected {}",
-            cmd_tokenized[2],
-            Keywords::VARIABLE("".to_string())
+            "Error creating database. Wrong keyword found at {}. {} is not a valid database name.",
+            3, cmd_tokenized[2],
         ),
     }
 }
@@ -191,22 +223,28 @@ fn create_table(db: &mut DataBase, cmd_tokenized: &[Keywords]) {
         );
     } else {
         let column_types = create_columns(cmd_tokenized);
+        let column_types = match column_types {
+            Ok(ct) => ct,
+            Err(e) => {
+                println!("{}", e);
+                return;
+            }
+        };
         match &cmd_tokenized[2] {
             Keywords::VARIABLE(v) => {
                 db.add_table(DataBaseTable::new(String::from(v), column_types))
             }
             _ => {
                 println!(
-                    "Wrong Keyword. Found {} expected {}.",
-                    &cmd_tokenized[2],
-                    Keywords::VARIABLE("".to_string())
+                    "Error creating table. Wrong Keyword at position {}. {} is not a valid table name.",
+                    3, &cmd_tokenized[2],
                 )
             }
         }
     }
 }
 
-fn create_columns(cmd_tokenized: &[Keywords]) -> Vec<DataBaseColumn> {
+fn create_columns(cmd_tokenized: &[Keywords]) -> Result<Vec<DataBaseColumn>, String> {
     let mut columns: Vec<DataBaseColumn> = Vec::new();
     let mut table_count = 0;
     for i in 3..cmd_tokenized.len() {
@@ -214,11 +252,30 @@ fn create_columns(cmd_tokenized: &[Keywords]) -> Vec<DataBaseColumn> {
             Keywords::LPAREN => continue,
             Keywords::COMMA => continue,
             Keywords::RPAREN => break,
-            Keywords::VARIABLE(_) => continue,
+            Keywords::VARIABLE(v) => {
+                match cmd_tokenized[i + 1] {
+                    Keywords::INTEGER => continue,
+                    Keywords::BOOL => continue,
+                    Keywords::STRING => continue,
+                    _ => {
+                        return Err(format!(
+                            "Error creating database column. Wrong keyword at position {}. No datatype specified for column {}.",
+                            i,
+                            v.to_string()
+                        ));
+                    }
+                };
+            }
             Keywords::INTEGER => {
                 let name = match &cmd_tokenized[i - 1] {
                     Keywords::VARIABLE(v) => v.to_string(),
-                    _ => panic!("ERROR"),
+                    _ => {
+                        return Err(format!(
+                            "No valid name for INTEGER found. Expected VARIABLE, found {}, at pos {}.",
+                            cmd_tokenized[i - 1],
+                            i - 1
+                        ));
+                    }
                 };
                 columns.push(DataBaseColumn::new(table_count, name, DataType::Integer(0)));
                 table_count += 1;
@@ -226,7 +283,13 @@ fn create_columns(cmd_tokenized: &[Keywords]) -> Vec<DataBaseColumn> {
             Keywords::STRING => {
                 let name = match &cmd_tokenized[i - 1] {
                     Keywords::VARIABLE(v) => v.to_string(),
-                    _ => panic!("ERROR"),
+                    _ => {
+                        return Err(format!(
+                            "No valid name for STRING found. Expected VARIABLE, found {}, at pos {}.",
+                            cmd_tokenized[i - 1],
+                            i - 1
+                        ));
+                    }
                 };
                 columns.push(DataBaseColumn::new(
                     table_count,
@@ -238,13 +301,19 @@ fn create_columns(cmd_tokenized: &[Keywords]) -> Vec<DataBaseColumn> {
             Keywords::BOOL => {
                 let name = match &cmd_tokenized[i - 1] {
                     Keywords::VARIABLE(v) => v.to_string(),
-                    _ => panic!("ERROR"),
+                    _ => {
+                        return Err(format!(
+                            "No valid name for BOOL found. Expected VARIABLE, found {}, at pos {}.",
+                            cmd_tokenized[i - 1],
+                            i - 1
+                        ));
+                    }
                 };
                 columns.push(DataBaseColumn::new(table_count, name, DataType::Bool(true)));
                 table_count += 1;
             }
-            _ => panic!("ERROR!"),
+            _ => return Err(format!("Unexpected keyword found at position {}.", i + 1)),
         }
     }
-    columns
+    Ok(columns)
 }

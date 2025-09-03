@@ -99,6 +99,8 @@ pub fn print_cols(table: &mut DataBaseTable, cols: Vec<DataBaseColumn>) {
         }
         index += 1;
     }
+    
+    print_ln(total_width, " ̄".to_string());
     let col_ids: Vec<i32> = cols.iter().map(|x| x.get_id()).collect();
     for row in rows {
         print!("    | ");

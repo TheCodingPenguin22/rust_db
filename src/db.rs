@@ -32,11 +32,11 @@ impl DataBase {
     pub fn add_table(&mut self, db_table: DataBaseTable) {
         self.tables.push(db_table);
     }
-    pub fn get_table(&mut self, table_name: String) -> Result<&mut DataBaseTable, &'static str> {
+    pub fn get_table(&mut self, table_name: String) -> Result<&mut DataBaseTable, String> {
         self.tables
             .iter_mut()
             .find(|x| x.name == table_name)
-            .ok_or("Could not find database table")
+            .ok_or(format!("Could not find database table with name {}", table_name))
     }
     pub fn get_tables(&self) -> &Vec<DataBaseTable> {
         &self.tables
@@ -133,11 +133,6 @@ pub struct DataBaseRow {
 impl DataBaseRow {
     pub fn new(entries: Vec<DataBaseEntry>) -> Self {
         Self { entries }
-    }
-    pub fn print(&self) {
-        for entry in self.entries.iter() {
-            entry.data.print();
-        }
     }
     pub fn get_entries(&self) -> &Vec<DataBaseEntry> {
         &self.entries
